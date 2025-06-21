@@ -1,0 +1,292 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        900,
+        240
+      ],
+      "id": "3919f45d-9f42-4196-ab4c-8f48d1e1132a",
+      "name": "SerpAPI",
+      "credentials": {
+        "serpApi": {
+          "id": "EkZ0Mo36HJUBnDOG",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Hi! Your job is to fetch news from the internet, analyze and ranks stories, and deliver the top 5 most important news items tailored to the user’s interests to Discord. Make sure every news item is unique.\nThe topics on which you should fetch news are: {{ $json.topics }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "65da0cba-833c-4dec-8fd2-02b66336c3d0",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": "mindcraft-gpt4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        660,
+        300
+      ],
+      "id": "9389681d-bd5c-4531-a0b9-d8637033a1ac",
+      "name": "Azure OpenAI Chat Model",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "MW5DUldtSkML68Pr",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "newssession"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        760,
+        280
+      ],
+      "id": "fef8dc0f-8b48-4703-bc48-6f813793e76a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "f71d3e49-6673-490f-b52e-8909031e65b2",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        0
+      ],
+      "id": "517d58b2-7b24-4594-8fb4-767396782c46",
+      "name": "Discord",
+      "webhookId": "2c828fbb-c1bd-4d2d-9bea-64336adcf1cf",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "qrzBoWdh2KnKjAKQ",
+          "name": "Discord Webhook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"topics\": [\"anime\", \"technology\", \"politics\",\"games\"]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        260,
+        200
+      ],
+      "id": "d1b5512b-858a-4e67-b026-badb5c94c597",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        160
+      ],
+      "id": "0007ba93-bfd9-4afe-88ab-63cd954bb4b0",
+      "name": "Wait",
+      "webhookId": "7d311fe6-e7bd-407c-995e-45a6b573d512"
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        240
+      ],
+      "id": "7288446e-a117-4257-b7b3-62d17d175b07",
+      "name": "Markdown"
+    },
+    {
+      "parameters": {
+        "sendTo": "ark4nandi@gmail.com",
+        "subject": "News",
+        "emailType": "text",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1320,
+        200
+      ],
+      "id": "f7b1404a-7521-4a26-9e25-b56255dfa8a0",
+      "name": "Gmail",
+      "webhookId": "2e3a4103-2e55-4e98-9789-7e8f8bd9d46b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "6JwNkIEBM2cTMLDv",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Azure OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "4ec05ba8-66f2-445e-9f57-7ce001276475",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "152beeba5b0eaa7e98a9405d197f010892d13e7c69ba29f3949eece6f72add48"
+  },
+  "id": "2uvtjgcS6ssOyA2T",
+  "tags": []
+}
